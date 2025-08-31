@@ -35,13 +35,14 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
       const response = await model.generateContent(prompt);
       return response;
     } catch (error) {
-      if (error.status === 429 && attempt < retries - 1) {
+      // Retry on 429 (Too Many Requests) and 503 (Service Unavailable)
+      if ((error.status === 429 || error.status === 503) && attempt < retries - 1) {
         const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff
-        console.warn(`Rate limit hit. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
+        console.warn(`API error ${error.status}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
         await sleep(delay);
         attempt++;
       } else {
-        throw error; // Re-throw the error if it's not a rate limit issue or we've run out of retries
+        throw error; // Re-throw the error if it's not a retriable status or we've run out of retries
       }
     }
   }
