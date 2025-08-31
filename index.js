@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Redis = require('ioredis');
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const KEYWORDS = process.env.KEYWORDS;
@@ -57,6 +58,8 @@ async function writeBook() {
 
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const redis = new Redis();
+  const redisKey = `book_content:${KEYWORDS.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
   let bookContent = "";
   let world = "";
@@ -138,6 +141,14 @@ async function writeBook() {
 
       bookContent += `\n\n${newParagraph}`;
 
+      // Save content to Redis
+      try {
+        await redis.set(redisKey, bookContent);
+        console.log(`Content for chapter ${currentChapter} saved to Redis.`);
+      } catch (redisError) {
+        console.error("Failed to save to Redis:", redisError);
+      }
+
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
         currentChapter++;
@@ -149,7 +160,7 @@ async function writeBook() {
       }
       
       // Update the summary for the next iteration
-      const summaryPrompt = `Based on the following content, write a comprehensive summary of the book so far: "${bookContent}"`;
+      const summaryPrompt = `Based on the following content, write a full summary of the book so far: "${bookContent}"`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
     }
@@ -160,6 +171,8 @@ async function writeBook() {
 
   } catch (error) {
     console.error("An error occurred during the writing process:", error);
+  } finally {
+    redis.quit();
   }
 }
 
