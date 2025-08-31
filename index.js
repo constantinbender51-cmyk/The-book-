@@ -18,7 +18,14 @@ async function safeGenerateContent(model, prompt, maxRetries = 5) {
     while (retryCount < maxRetries) {
         try {
             const response = await model.generateContent(prompt);
-            return response.text;
+            const generatedText = response.text;
+
+            // Explicitly check for an undefined or empty response
+            if (!generatedText) {
+                throw new Error("API returned no text content. It may have been blocked by safety filters or an internal error occurred.");
+            }
+
+            return generatedText;
         } catch (error) {
             console.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
 
