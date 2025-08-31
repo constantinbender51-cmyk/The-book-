@@ -35,7 +35,7 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
     try {
       const response = await model.generateContent(prompt);
       // Log the full response object for debugging purposes
-      const responseJson = await response.response.json();
+      const responseJson = response.response;
       console.log("Full API response:", JSON.stringify(responseJson, null, 2));
       return response;
     } catch (error) {
