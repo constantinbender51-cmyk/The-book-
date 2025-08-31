@@ -6,6 +6,21 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const KEYWORDS = process.env.KEYWORDS;
 const CHAPTER_COUNT = parseInt(process.env.CHAPTER_COUNT, 10);
 
+/**
+ * Safely extracts the text from a Generative AI API response.
+ * @param {object} response The full API response object.
+ * @returns {string} The extracted text, or an empty string if not found.
+ */
+function extractTextFromResponse(response) {
+  try {
+    // The text is nested within a specific path in the JSON response.
+    return response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  } catch (error) {
+    console.error("Failed to extract text from API response:", error);
+    return "";
+  }
+}
+
 async function writeBook() {
   if (!API_KEY || !KEYWORDS || isNaN(CHAPTER_COUNT)) {
     console.error("Missing required environment variables: GEMINI_API_KEY, KEYWORDS, or CHAPTER_COUNT.");
@@ -34,24 +49,21 @@ async function writeBook() {
     console.log("\n[1/5] Creating the world...");
     const worldPrompt = `Based on the keywords "${KEYWORDS}", create a detailed world for a book with ${CHAPTER_COUNT} chapters. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description.`;
     const worldResponse = await model.generateContent(worldPrompt);
-    console.log("World response:", worldResponse.text);
-    world = worldResponse.text;
+    world = extractTextFromResponse(worldResponse);
     console.log("World created.");
 
     // Stage 2: Create locations
     console.log("\n[2/5] Creating locations...");
     const locationsPrompt = `Using this world description: "${world}", create 3-5 key locations for a book. Describe each location briefly in a single paragraph.`;
     const locationsResponse = await model.generateContent(locationsPrompt);
-    console.log("Locations response:", locationsResponse.text);
-    locations = locationsResponse.text;
+    locations = extractTextFromResponse(locationsResponse);
     console.log("Locations created.");
 
     // Stage 3: Create characters
     console.log("\n[3/5] Creating characters...");
     const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create 3-5 main characters for the book. Briefly describe their personality, motivations, and role in the story.`;
     const charactersResponse = await model.generateContent(charactersPrompt);
-    console.log("Characters response:", charactersResponse.text);
-    characters = charactersResponse.text;
+    characters = extractTextFromResponse(charactersResponse);
     console.log("Characters created.");
 
     // Stage 4: Outline chapters
@@ -62,8 +74,7 @@ async function writeBook() {
       Characters: "${characters}"
     `;
     const outlineResponse = await model.generateContent(outlinePrompt);
-    console.log("Outline response:", outlineResponse.text);
-    chapterOutline = outlineResponse.text;
+    chapterOutline = extractTextFromResponse(outlineResponse);
     console.log("Chapter outline created.");
 
     // Stage 5: Iteratively write the book, paragraph by paragraph
@@ -88,8 +99,7 @@ async function writeBook() {
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
       const paragraphResponse = await model.generateContent(paragraphPrompt);
-      console.log(`Paragraph response (Chapter ${currentChapter}):`, paragraphResponse.text);
-      let newParagraph = paragraphResponse.text.trim();
+      let newParagraph = extractTextFromResponse(paragraphResponse).trim();
 
       // Check for special markers
       const isChapterEnd = newParagraph.includes("END OF THE CHAPTER");
@@ -113,8 +123,7 @@ async function writeBook() {
       // Update the summary for the next iteration
       const summaryPrompt = `Based on the following content, write a one-sentence summary of the book so far: "${bookContent}"`;
       const summaryResponse = await model.generateContent(summaryPrompt);
-      console.log("Summary response:", summaryResponse.text);
-      summary = summaryResponse.text.trim();
+      summary = extractTextFromResponse(summaryResponse).trim();
     }
     
     console.log("\n--- Book Writing Complete! ---");
