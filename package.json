@@ -2,9 +2,9 @@
   "name": "book-writer-ai",
   "version": "1.0.0",
   "description": "An AI-powered book writing script.",
-  "main": "index.s",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.s"
+    "start": "node index.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.8.0",
