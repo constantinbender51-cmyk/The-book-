@@ -22,6 +22,7 @@ async function safeGenerateContent(model, prompt, maxRetries = 5) {
 
             // Explicitly check for an undefined or empty response
             if (!generatedText) {
+                console.error("API returned no text content. Full response object:", JSON.stringify(response, null, 2));
                 throw new Error("API returned no text content. It may have been blocked by safety filters or an internal error occurred.");
             }
 
