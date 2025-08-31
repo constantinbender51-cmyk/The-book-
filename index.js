@@ -123,7 +123,7 @@ async function writeBookLogic(model) {
     `;
     const outlineResponse = await callGenerativeAIWithRetry(outlinePrompt, model);
     chapterOutline = extractTextFromResponse(outlineResponse);
-    console.log("Chapter outline created.");
+    console.log("Chapter outline created.\n", chapterOutline);
 
     // Stage 5: Iteratively write the book, paragraph by paragraph
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
