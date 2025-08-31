@@ -36,9 +36,15 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
       const response = await model.generateContent(prompt);
       return response;
     } catch (error) {
-      // Retry on 429 (Too Many Requests) and 503 (Service Unavailable)
       if ((error.status === 429 || error.status === 503) && attempt < retries - 1) {
-        const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff
+        let delay = initialDelay * Math.pow(2, attempt);
+        // Check if the API response includes a specific retry delay
+        const retryInfo = error.response?.data?.error?.details?.find(d => d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
+        if (retryInfo && retryInfo.retryDelay) {
+          const apiDelaySeconds = parseFloat(retryInfo.retryDelay.replace('s', ''));
+          delay = Math.max(delay, apiDelaySeconds * 1000);
+        }
+        
         console.warn(`API error ${error.status}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
         await sleep(delay);
         attempt++;
@@ -59,36 +65,14 @@ async function writeBook() {
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
   
-  const redisUrl = process.env.REDIS_URL;
-  let redis = null;
-  if (redisUrl) {
-    try {
-      redis = new Redis(redisUrl);
-      // Catch Redis connection errors.
-      redis.on('error', (err) => {
-          console.error('Redis connection error:', err);
-      });
-      console.log("Successfully connected to Redis.");
-    } catch (err) {
-      console.error("Failed to connect to Redis. Continuing without database persistence:", err.message);
-      redis = null;
-    }
-  } else {
-      console.warn("REDIS_URL environment variable is not set. Skipping Redis connection.");
-  }
-  
   try {
-    await writeBookLogic(redis, model);
+    await writeBookLogic(model);
   } finally {
-    if (redis) {
-      redis.quit();
-    }
+    // No Redis client to quit.
   }
 }
 
-async function writeBookLogic(redis, model) {
-  const redisKey = `book_content:${KEYWORDS.replace(/[^a-zA-Z0-9]/g, '_')}`;
-
+async function writeBookLogic(model) {
   let bookContent = "";
   let world = "";
   let locations = "";
@@ -166,18 +150,10 @@ async function writeBookLogic(redis, model) {
       
       // Clean up the paragraph by removing the markers
       newParagraph = newParagraph.replace("END OF THE CHAPTER", "").replace("END OF THE BOOK", "").trim();
+      
+      console.log(newParagraph);
 
       bookContent += `\n\n${newParagraph}`;
-
-      // Save content to Redis if the connection is active
-      if (redis && redis.status === 'ready') {
-        try {
-          await redis.set(redisKey, bookContent);
-          console.log(`Content for chapter ${currentChapter} saved to Redis.`);
-        } catch (redisError) {
-          console.error("Failed to save to Redis:", redisError);
-        }
-      }
 
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
@@ -193,6 +169,12 @@ async function writeBookLogic(redis, model) {
       const summaryPrompt = `Based on the following content, write a full summary of the book so far: "${bookContent}"`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
+
+      // Add a 20-second pause between each AI call in the writing segment
+      if (!bookComplete) {
+        console.log("Pausing for 20 seconds before writing the next paragraph...");
+        await sleep(20000);
+      }
     }
     
     console.log("\n--- Book Writing Complete! ---");
