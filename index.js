@@ -56,7 +56,7 @@ async function writeBook() {
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
   let bookContent = "";
   let world = "";
@@ -149,7 +149,7 @@ async function writeBook() {
       }
       
       // Update the summary for the next iteration
-      const summaryPrompt = `Based on the following content, write a one-sentence summary of the book so far: "${bookContent}"`;
+      const summaryPrompt = `Based on the following content, write a comprehensive summary of the book so far: "${bookContent}"`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
     }
