@@ -136,15 +136,13 @@ async function writeBookLogic(model) {
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the main characters: "${characters}"
-        Here is the current chapter number: "${currentChapter}"
         Here is the full chapter outline: "${chapterOutline}"
-        This is the current book content so far: "${bookContent}"
         This is a summary of the book so far: "${summary}"
-        The chapter count for this book is: ${CHAPTER_COUNT}
-
-        A very rough estimate for an "average" chapter would be somewhere between 30 and 120 paragraphs.
         
-        Write a single, new paragraph that continues the story.
+        This book has ${CHAPTER_COUNT} chapters.
+        A chapter may have uo to 30 paragraphs, so take your time building the story, paragraph by paragraph, until you have concluded the end of a chapter. You will be able to continue writing the next paragraph in the next invocation.
+        
+        Write a single, new paragraph, on the next iteration you will write the next one, so take your time until you reach the end of a chapter.
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
