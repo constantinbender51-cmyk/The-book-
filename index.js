@@ -1,54 +1,10 @@
 require('dotenv').config();
 
-const { GoogleGenerativeAI, GoogleGenerativeAIError } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const KEYWORDS = process.env.KEYWORDS;
 const CHAPTER_COUNT = parseInt(process.env.CHAPTER_COUNT, 10);
-
-/**
- * Wraps the generateContent call with a retry and exponential backoff mechanism.
- * @param {object} model The GenerativeModel instance.
- * @param {string} prompt The prompt string to send.
- * @param {number} maxRetries The maximum number of retries.
- * @returns {Promise<string>} The generated text.
- */
-async function safeGenerateContent(model, prompt, maxRetries = 5) {
-    let retryCount = 0;
-    while (retryCount < maxRetries) {
-        try {
-            const response = await model.generateContent(prompt);
-            // Correctly access the nested text property
-            const generatedText = response.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            // Explicitly check for an undefined or empty response
-            if (!generatedText) {
-                console.error("API returned no text content. Full response object:", JSON.stringify(response, null, 2));
-                throw new Error("API returned no text content. It may have been blocked by safety filters or an internal error occurred.");
-            }
-
-            return generatedText;
-        } catch (error) {
-            console.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
-
-            // Retry for API-related errors (429, 500) or our custom "no content" error
-            // Any error that isn't a direct client-side problem should trigger a retry
-            const isRetryableError = (error instanceof GoogleGenerativeAIError && (error.status === 429 || error.status >= 500)) || error.message.includes("API returned no text content");
-
-            if (isRetryableError) {
-                const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
-                console.log(`Retrying in ${delay / 1000} seconds...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                retryCount++;
-            } else {
-                // If it's a different kind of error, re-throw it immediately
-                throw error;
-            }
-        }
-    }
-    // If all retries fail, throw an error
-    throw new Error(`Failed to generate content after ${maxRetries} retries.`);
-}
 
 async function writeBook() {
   if (!API_KEY || !KEYWORDS || isNaN(CHAPTER_COUNT)) {
@@ -57,7 +13,7 @@ async function writeBook() {
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   let bookContent = "";
   let world = "";
@@ -77,19 +33,22 @@ async function writeBook() {
     // Stage 1: Create the world
     console.log("\n[1/5] Creating the world...");
     const worldPrompt = `Based on the keywords "${KEYWORDS}", create a detailed world for a book with ${CHAPTER_COUNT} chapters. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description.`;
-    world = await safeGenerateContent(model, worldPrompt);
+    const worldResponse = await model.generateContent(worldPrompt);
+    world = worldResponse.text;
     console.log("World created.");
 
     // Stage 2: Create locations
     console.log("\n[2/5] Creating locations...");
     const locationsPrompt = `Using this world description: "${world}", create 3-5 key locations for a book. Describe each location briefly in a single paragraph.`;
-    locations = await safeGenerateContent(model, locationsPrompt);
+    const locationsResponse = await model.generateContent(locationsPrompt);
+    locations = locationsResponse.text;
     console.log("Locations created.");
 
     // Stage 3: Create characters
     console.log("\n[3/5] Creating characters...");
     const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create 3-5 main characters for the book. Briefly describe their personality, motivations, and role in the story.`;
-    characters = await safeGenerateContent(model, charactersPrompt);
+    const charactersResponse = await model.generateContent(charactersPrompt);
+    characters = charactersResponse.text;
     console.log("Characters created.");
 
     // Stage 4: Outline chapters
@@ -99,7 +58,8 @@ async function writeBook() {
       Locations: "${locations}"
       Characters: "${characters}"
     `;
-    chapterOutline = await safeGenerateContent(model, outlinePrompt);
+    const outlineResponse = await model.generateContent(outlinePrompt);
+    chapterOutline = outlineResponse.text;
     console.log("Chapter outline created.");
 
     // Stage 5: Iteratively write the book, paragraph by paragraph
@@ -123,8 +83,8 @@ async function writeBook() {
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
-      let newParagraph = await safeGenerateContent(model, paragraphPrompt);
-      newParagraph = newParagraph.trim();
+      const paragraphResponse = await model.generateContent(paragraphPrompt);
+      let newParagraph = paragraphResponse.text.trim();
 
       // Check for special markers
       const isChapterEnd = newParagraph.includes("END OF THE CHAPTER");
@@ -147,8 +107,8 @@ async function writeBook() {
       
       // Update the summary for the next iteration
       const summaryPrompt = `Based on the following content, write a one-sentence summary of the book so far: "${bookContent}"`;
-      summary = await safeGenerateContent(model, summaryPrompt);
-      summary = summary.trim();
+      const summaryResponse = await model.generateContent(summaryPrompt);
+      summary = summaryResponse.text.trim();
     }
     
     console.log("\n--- Book Writing Complete! ---");
@@ -156,7 +116,7 @@ async function writeBook() {
     console.log(bookContent);
 
   } catch (error) {
-    console.error("An unrecoverable error occurred:", error);
+    console.error("An error occurred during the writing process:", error);
   }
 }
 
