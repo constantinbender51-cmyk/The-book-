@@ -34,6 +34,7 @@ async function writeBook() {
     console.log("\n[1/5] Creating the world...");
     const worldPrompt = `Based on the keywords "${KEYWORDS}", create a detailed world for a book with ${CHAPTER_COUNT} chapters. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description.`;
     const worldResponse = await model.generateContent(worldPrompt);
+    console.log("World response:", JSON.stringify(worldResponse, null, 2));
     world = worldResponse.text;
     console.log("World created.");
 
@@ -41,6 +42,7 @@ async function writeBook() {
     console.log("\n[2/5] Creating locations...");
     const locationsPrompt = `Using this world description: "${world}", create 3-5 key locations for a book. Describe each location briefly in a single paragraph.`;
     const locationsResponse = await model.generateContent(locationsPrompt);
+    console.log("Locations response:", JSON.stringify(locationsResponse, null, 2));
     locations = locationsResponse.text;
     console.log("Locations created.");
 
@@ -48,6 +50,7 @@ async function writeBook() {
     console.log("\n[3/5] Creating characters...");
     const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create 3-5 main characters for the book. Briefly describe their personality, motivations, and role in the story.`;
     const charactersResponse = await model.generateContent(charactersPrompt);
+    console.log("Characters response:", JSON.stringify(charactersResponse, null, 2));
     characters = charactersResponse.text;
     console.log("Characters created.");
 
@@ -59,6 +62,7 @@ async function writeBook() {
       Characters: "${characters}"
     `;
     const outlineResponse = await model.generateContent(outlinePrompt);
+    console.log("Outline response:", JSON.stringify(outlineResponse, null, 2));
     chapterOutline = outlineResponse.text;
     console.log("Chapter outline created.");
 
@@ -84,6 +88,7 @@ async function writeBook() {
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
       const paragraphResponse = await model.generateContent(paragraphPrompt);
+      console.log(`Paragraph response (Chapter ${currentChapter}):`, JSON.stringify(paragraphResponse, null, 2));
       let newParagraph = paragraphResponse.text.trim();
 
       // Check for special markers
@@ -108,6 +113,7 @@ async function writeBook() {
       // Update the summary for the next iteration
       const summaryPrompt = `Based on the following content, write a one-sentence summary of the book so far: "${bookContent}"`;
       const summaryResponse = await model.generateContent(summaryPrompt);
+      console.log("Summary response:", JSON.stringify(summaryResponse, null, 2));
       summary = summaryResponse.text.trim();
     }
     
