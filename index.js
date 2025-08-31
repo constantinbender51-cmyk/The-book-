@@ -21,6 +21,8 @@ async function writeBook() {
   let characters = "";
   let chapterOutline = "";
   let summary = "";
+  let currentChapter = 1;
+  let bookComplete = false;
 
   console.log("--- Starting book writing process ---");
   console.log(`Keywords: ${KEYWORDS}`);
@@ -60,28 +62,48 @@ async function writeBook() {
     chapterOutline = outlineResponse.text;
     console.log("Chapter outline created.");
 
-    // Stage 5: Iteratively write the book
+    // Stage 5: Iteratively write the book, paragraph by paragraph
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
-    const chapters = chapterOutline.split(/Chapter \d+:/).filter(Boolean);
 
-    for (let i = 0; i < chapters.length; i++) {
-      const chapter = chapters[i].trim();
-      console.log(`\n- Writing Chapter ${i + 1}/${CHAPTER_COUNT}...`);
-
+    while (!bookComplete) {
+      console.log(`\n- Writing Chapter ${currentChapter}...`);
+      
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write the next paragraph of the story.
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the main characters: "${characters}"
-        Here is the chapter outline: "${chapterOutline}"
+        Here is the full chapter outline: "${chapterOutline}"
         This is the current book content so far: "${bookContent}"
         This is a summary of the book so far: "${summary}"
         
-        Write a single, new paragraph that continues the story based on the current chapter outline. Focus on the next logical step in the narrative.`;
+        Write a single, new paragraph that continues the story.
+        
+        Important instructions:
+        - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
+        - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
       const paragraphResponse = await model.generateContent(paragraphPrompt);
-      const newParagraph = paragraphResponse.text.trim();
-      bookContent += `\n${newParagraph}`;
+      let newParagraph = paragraphResponse.text.trim();
+
+      // Check for special markers
+      const isChapterEnd = newParagraph.includes("END OF THE CHAPTER");
+      const isBookEnd = newParagraph.includes("END OF THE BOOK");
+      
+      // Clean up the paragraph by removing the markers
+      newParagraph = newParagraph.replace("END OF THE CHAPTER", "").replace("END OF THE BOOK", "").trim();
+
+      bookContent += `\n\n${newParagraph}`;
+
+      if (isChapterEnd) {
+        console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
+        currentChapter++;
+      }
+
+      if (isBookEnd) {
+        bookComplete = true;
+        console.log(`\n--- Book concluded with Chapter ${currentChapter}. ---`);
+      }
       
       // Update the summary for the next iteration
       const summaryPrompt = `Based on the following content, write a one-sentence summary of the book so far: "${bookContent}"`;
