@@ -140,6 +140,9 @@ async function writeBookLogic(model) {
         Here is the full chapter outline: "${chapterOutline}"
         This is the current book content so far: "${bookContent}"
         This is a summary of the book so far: "${summary}"
+        The chapter count for this book is: ${CHAPTER_COUNT}
+
+        A very rough estimate for an "average" chapter would be somewhere between 30 and 120 paragraphs.
         
         Write a single, new paragraph that continues the story.
         
