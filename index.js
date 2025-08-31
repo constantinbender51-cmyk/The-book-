@@ -68,7 +68,7 @@ async function writeBook() {
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
   
   try {
     await writeBookLogic(model);
@@ -132,14 +132,14 @@ async function writeBookLogic(model) {
       console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write one paragraph at a time. A single chapter may contain up to 30 paragraphs. You only have to write the next, continuing on the summary of what you have written so far. If this is your first paragraph, start from the beginning.
+        You are an author writing a book. Your task is to write the next paragraph of the story.
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the main characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         This is a summary of the book so far: "${summary}"
         
-        Write a single paragraph of a chapter of the book, until you have concluded a chapter or the entire book.
+        Write a single, new paragraph that continues the story.
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
