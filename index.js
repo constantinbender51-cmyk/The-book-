@@ -15,8 +15,8 @@ const CHAPTER_COUNT = parseInt(process.env.CHAPTER_COUNT, 10);
 function extractTextFromResponse(response) {
   try {
     // The text is nested within a specific path in the JSON response.
-    let var = response.candidates;
-    console.log(` response .  \n${var}`);
+    let text = response.candidates;
+    console.log(` response .  \n${text}`);
   } catch (error) {
     console.error("Failed to extract text from API response:", error);
     return "";
