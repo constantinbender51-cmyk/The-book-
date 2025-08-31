@@ -28,7 +28,7 @@ function extractTextFromResponse(response) {
  */
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function callGenerativeAIWithRetry(prompt, model, retries = 5, initialDelay = 1000) {
+async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDelay = 1000) {
   let attempt = 0;
   while (attempt < retries) {
     try {
