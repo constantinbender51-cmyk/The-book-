@@ -29,8 +29,11 @@ async function safeGenerateContent(model, prompt, maxRetries = 5) {
         } catch (error) {
             console.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
 
-            // Check if the error is a rate limit or internal server error
-            if (error instanceof GoogleGenerativeAIError && (error.status === 429 || error.status >= 500)) {
+            // Retry for API-related errors (429, 500) or our custom "no content" error
+            // Any error that isn't a direct client-side problem should trigger a retry
+            const isRetryableError = (error instanceof GoogleGenerativeAIError && (error.status === 429 || error.status >= 500)) || error.message.includes("API returned no text content");
+
+            if (isRetryableError) {
                 const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
                 console.log(`Retrying in ${delay / 1000} seconds...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
