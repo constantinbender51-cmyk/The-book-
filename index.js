@@ -34,6 +34,8 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
   while (attempt < retries) {
     try {
       const response = await model.generateContent(prompt);
+      // Log the full response object for debugging purposes
+      console.log("Full API response:", JSON.stringify(response.response.json(), null, 2));
       return response;
     } catch (error) {
       if ((error.status === 429 || error.status === 503) && attempt < retries - 1) {
@@ -151,7 +153,11 @@ async function writeBookLogic(model) {
       // Clean up the paragraph by removing the markers
       newParagraph = newParagraph.replace("END OF THE CHAPTER", "").replace("END OF THE BOOK", "").trim();
       
-      console.log(newParagraph);
+      if (newParagraph) {
+        console.log(newParagraph);
+      } else {
+        console.warn("Generated paragraph was empty. Skipping.");
+      }
 
       bookContent += `\n\n${newParagraph}`;
 
