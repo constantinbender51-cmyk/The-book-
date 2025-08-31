@@ -1,0 +1,13 @@
+{
+"name": "book-writer-ai",
+"version": "1.0.0",
+"description": "A Node.js application that writes a book using the Google Gemini API.",
+"main": "index.js",
+"scripts": {
+"start": "node index.js"
+},
+"dependencies": {
+"@google/generative-ai": "^0.15.0",
+"dotenv": "^16.4.5"
+}
+}
