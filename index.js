@@ -58,7 +58,35 @@ async function writeBook() {
 
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-  const redis = new Redis();
+  
+  const redisUrl = process.env.REDIS_URL;
+  let redis = null;
+  if (redisUrl) {
+    try {
+      redis = new Redis(redisUrl);
+      // Catch Redis connection errors.
+      redis.on('error', (err) => {
+          console.error('Redis connection error:', err);
+      });
+      console.log("Successfully connected to Redis.");
+    } catch (err) {
+      console.error("Failed to connect to Redis. Continuing without database persistence:", err.message);
+      redis = null;
+    }
+  } else {
+      console.warn("REDIS_URL environment variable is not set. Skipping Redis connection.");
+  }
+  
+  try {
+    await writeBookLogic(redis, model);
+  } finally {
+    if (redis) {
+      redis.quit();
+    }
+  }
+}
+
+async function writeBookLogic(redis, model) {
   const redisKey = `book_content:${KEYWORDS.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
   let bookContent = "";
@@ -141,12 +169,14 @@ async function writeBook() {
 
       bookContent += `\n\n${newParagraph}`;
 
-      // Save content to Redis
-      try {
-        await redis.set(redisKey, bookContent);
-        console.log(`Content for chapter ${currentChapter} saved to Redis.`);
-      } catch (redisError) {
-        console.error("Failed to save to Redis:", redisError);
+      // Save content to Redis if the connection is active
+      if (redis && redis.status === 'ready') {
+        try {
+          await redis.set(redisKey, bookContent);
+          console.log(`Content for chapter ${currentChapter} saved to Redis.`);
+        } catch (redisError) {
+          console.error("Failed to save to Redis:", redisError);
+        }
       }
 
       if (isChapterEnd) {
@@ -171,8 +201,6 @@ async function writeBook() {
 
   } catch (error) {
     console.error("An error occurred during the writing process:", error);
-  } finally {
-    redis.quit();
   }
 }
 
