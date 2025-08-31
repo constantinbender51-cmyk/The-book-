@@ -18,7 +18,8 @@ async function safeGenerateContent(model, prompt, maxRetries = 5) {
     while (retryCount < maxRetries) {
         try {
             const response = await model.generateContent(prompt);
-            const generatedText = response.text;
+            // Correctly access the nested text property
+            const generatedText = response.candidates?.[0]?.content?.parts?.[0]?.text;
 
             // Explicitly check for an undefined or empty response
             if (!generatedText) {
