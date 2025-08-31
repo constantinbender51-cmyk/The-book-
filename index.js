@@ -132,10 +132,11 @@ async function writeBookLogic(model) {
       console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write the next paragraph of the story.
+        You are an author writing a book. Your task is to write a single paragraph of the book.
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the main characters: "${characters}"
+        Here is the current chapter number: "${currentChapter}"
         Here is the full chapter outline: "${chapterOutline}"
         This is the current book content so far: "${bookContent}"
         This is a summary of the book so far: "${summary}"
