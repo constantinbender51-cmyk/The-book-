@@ -41,7 +41,7 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
       //console.log("Full API response:", JSON.stringify(responseJson, null, 2));
       return response;
     } catch (error) {
-      if ((error.status === 429 || error.status === 503) && attempt < retries - 1) {
+      if ((error.status === 429 || error.status === 503 || (error.message && error.message.includes('503'))) && attempt < retries - 1) {
         let delay = initialDelay * Math.pow(2, attempt);
         // Check if the API response includes a specific retry delay
         const retryInfo = error.response?.data?.error?.details?.find(d => d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
@@ -137,13 +137,13 @@ async function writeBookLogic(model) {
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
-        This is the previous paragragraph: "${previous_paragraph}"
+        This is the previous paragraph of the chapter: "${previous_paragraph}"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph of chapter ${currentChapter}
+        Write a single paragraph, a single aspect, a fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} that one time will make up the whole chapter. Perhaps this is a single sentence from the outline guiding the whole paragraph, or a single word.
         Paragraphs written so far: ${paragraph_count}/max. 5 per chapter
         
         Important instructions:
