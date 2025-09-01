@@ -134,7 +134,7 @@ async function writeBookLogic(model) {
     let previous_paragraph = "No previous paragraphs.";
     
     while (!bookComplete) {
-       console.log(`\n- Writing Chapter ${currentChapter}...`);
+      //console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write the next paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
@@ -152,7 +152,7 @@ async function writeBookLogic(model) {
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
-      //console.log(`\nPrompt:\n${paragraphPrompt}`);
+      console.log(`\nPrompt:\n${paragraphPrompt}`);
 
       const paragraphResponse = await callGenerativeAIWithRetry(paragraphPrompt, model);
       let newParagraph = extractTextFromResponse(paragraphResponse).trim();
