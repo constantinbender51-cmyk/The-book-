@@ -129,6 +129,7 @@ async function writeBookLogic(model) {
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
 
     let paragraph_count = 0;
+    let previous_paragraph = "No previous paragraphs.";
     
     while (!bookComplete) {
       console.log(`\n- Writing Chapter ${currentChapter}...`);
@@ -136,12 +137,13 @@ async function writeBookLogic(model) {
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
+        This is the previous paragraph of the chapter: "${previous_paragraph}"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph, not a full logical conclusion, but a single aspect, fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} of the book. 
+        Write a single paragraph, a single aspect, a fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} that one time will make up the whole chapter. Perhaps this is a single sentence from the outline guiding the whole paragraph, or a single word.
         Paragraphs written so far: ${paragraph_count}/max. 30 per chapter
         
         Important instructions:
@@ -165,10 +167,12 @@ async function writeBookLogic(model) {
       }
 
       bookContent += `\n\n${newParagraph}`;
+      previous_paragraph = newParagraph;
 
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
         paragraph_count = 0;
+        previous_paragraph = "No previous paragraphs";
         currentChapter++;
       }
 
