@@ -144,7 +144,7 @@ async function writeBookLogic(model) {
         Here is the full chapter outline: "${chapterOutline}"
         
         Write a single paragraph, a single aspect, a fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} that one time will make up the whole chapter. Perhaps this is a single sentence from the outline guiding the whole paragraph, or a single word.
-        Paragraphs written so far: ${paragraph_count}/max. 5 per chapter
+        Paragraphs written so far: ${paragraph_count}/max. 30 per chapter
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
