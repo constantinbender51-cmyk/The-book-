@@ -125,7 +125,7 @@ async function writeBookLogic(model) {
     `;
     const outlineResponse = await callGenerativeAIWithRetry(outlinePrompt, model);
     chapterOutline = extractTextFromResponse(outlineResponse);
-    console.log("Chapter outline created.\n", chapterOutline);
+    console.log("Chapter outline created.\n");
 
     // Stage 5: Iteratively write the book, paragraph by paragraph
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
@@ -134,7 +134,7 @@ async function writeBookLogic(model) {
     let previous_paragraph = "No previous paragraphs.";
     
     while (!bookComplete) {
-      // console.log(`\n- Writing Chapter ${currentChapter}...`);
+       console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
@@ -151,6 +151,8 @@ async function writeBookLogic(model) {
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
+
+      console.log(`\nPrompt:\n${paragraphPrompt}`);
 
       const paragraphResponse = await callGenerativeAIWithRetry(paragraphPrompt, model);
       let newParagraph = extractTextFromResponse(paragraphResponse).trim();
