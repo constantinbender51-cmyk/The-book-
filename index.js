@@ -132,7 +132,7 @@ async function writeBookLogic(model) {
     let previous_paragraph = "No previous paragraphs.";
     
     while (!bookComplete) {
-      console.log(`\n- Writing Chapter ${currentChapter}...`);
+     // console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
@@ -188,7 +188,7 @@ async function writeBookLogic(model) {
 
       // Add a 20-second pause between each AI call in the writing segment
       if (!bookComplete) {
-        console.log("Pausing for 20 seconds before writing the next paragraph...");
+        //console.log("Pausing for 20 seconds before writing the next paragraph...");
         await sleep(20000);
       }
       paragraph_count++;
