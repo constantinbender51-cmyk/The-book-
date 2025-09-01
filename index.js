@@ -146,7 +146,7 @@ async function writeBookLogic(model) {
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph, a single part of the chapter, advancing the story, explaining a concept or thing, perhaps breaking the 4th wall, jumping places, or continuing the story guided by the provided outline.
+        Write a single paragraph, a single part of the chapter, advancing the story by building on the previous paragraph, explaining a concept or thing, perhaps breaking the 4th wall, jumping places, or continuing the story guided by the provided outline.
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
