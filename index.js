@@ -146,9 +146,7 @@ async function writeBookLogic(model) {
         
         Write a single paragraph, an aspect or element of the chapter that will eventually become a whole. Perhaps you take a word or sentence from the outline as inspiration or elaborate on something from the previous paragraph.
         Paragraphs in this chapter so far: ${paragraph_count}
-        A chapter may have up to 30 paragraphs.
         Current chapter: ${currentChapter}
-        Total number of chapters: ${CHAPTER_COUNT}
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
@@ -188,8 +186,7 @@ async function writeBookLogic(model) {
       }
       
       // Update the summary for the next iteration
-      const summaryPrompt = `Based on the following content, write a summary of the book so far: "${bookContent}
-      At the end, include a breakdown of the last paragraph."`;
+      const summaryPrompt = `Based on the following content, write a summary of the book so far: "${bookContent}"`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
 
