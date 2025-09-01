@@ -85,7 +85,7 @@ async function writeBookLogic(model) {
   let locations = "";
   let characters = "";
   let chapterOutline = "";
-  let summary = "Empty page, begin writing your book!";
+  let summary = "Empty page, begin writing!";
   let currentChapter = 1;
   let bookComplete = false;
 
@@ -137,7 +137,7 @@ async function writeBookLogic(model) {
        console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
+        You are an author writing a book. Your task is to write the next paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
         This is the previous paragraph of the chapter: "${previous_paragraph}"
         Here is the world description: "${world}"
@@ -145,8 +145,11 @@ async function writeBookLogic(model) {
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph, a single aspect, a fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} that one time will make up the whole chapter. Perhaps this is a single sentence from the outline guiding the whole paragraph, or a single word.
-        Paragraphs written so far: ${paragraph_count}/max. 30 per chapter
+        Write a single paragraph, a single aspect, a fragment of the chapter that will eventually become a whole. Perhaps you take a word or sentence from the outline as inspiration or you expand on the last paragraph, while maintaining the general direction of the outline.
+        Paragraphs in this chapter so far: ${paragraph_count}
+        A chapter may have up to 30 paragraphs.
+        Current chapter: ${currentChapter}
+        Total number of chapters: ${CHAPTER_COUNT}
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
