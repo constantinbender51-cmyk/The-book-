@@ -85,7 +85,7 @@ async function writeBookLogic(model) {
   let locations = "";
   let characters = "";
   let chapterOutline = "";
-  let summary = "Empty page, begin writing!";
+  let summary = "Empty page";
   let currentChapter = 1;
   let bookComplete = false;
 
@@ -131,20 +131,22 @@ async function writeBookLogic(model) {
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
 
     let paragraph_count = 0;
-    let previous_paragraph = "No previous paragraphs.";
+    let previous_paragraph = "Empty page";
     
     while (!bookComplete) {
       //console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write the next paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
+        You are an author writing a book. Your task is to write paragraph by paragraph, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
+        This is the previous paragraph: "${previous_paragraph}"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph, an aspect or element of the chapter that will eventually become a whole. Perhaps you take a word or sentence from the outline as inspiration or elaborate on something from the previous paragraph.
+        Write a single paragraph, not a whole logical strcture, not a fast paced runthrough of the outline, but a detailed, carefully crafted part of the chapter. 
+        
         Paragraphs in this chapter so far: ${paragraph_count}
         Current chapter: ${currentChapter}
         
