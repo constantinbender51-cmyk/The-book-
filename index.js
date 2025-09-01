@@ -168,7 +168,7 @@ async function writeBookLogic(model) {
 
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
-        paragraph_count = 0:
+        paragraph_count = 0;
         currentChapter++;
       }
 
