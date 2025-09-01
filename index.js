@@ -147,7 +147,7 @@ async function writeBookLogic(model) {
         
         Write a single paragraph, not a whole logical strcture, not a fast paced runthrough of the outline, but a detailed, carefully crafted part of the chapter. 
         
-        Paragraphs in this chapter so far: ${paragraph_count}
+        Paragraphs in this chapter so far: ${paragraph_count} (max. 5 per chapter)
         Current chapter: ${currentChapter}
         
         Important instructions:
