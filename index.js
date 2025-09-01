@@ -137,16 +137,14 @@ async function writeBookLogic(model) {
       
       const previousParagraphsText = previousParagraphs.join(' ');
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write the next paragraph of the book, given the summary so far, world description, locations of the book, characters, and chapter outline.
-        This is a summary of the book so far: "${summary}"
-        This is the previous 5 paragraphs: "${previousParagraphsText}"
-        This is the paragraph count of this chapter: "${paragraph_count} (spread the developments and facets of the story out/pace the chapter such as to meet a total chapter count of no more than 5 paragraphs per chapter)"
+        You are an author writing a book. Your task is to write the next paragraph of the book.
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
+        This is a summary of the book so far: "${summary}"
         
-        Write a single paragraph, a single part of the chapter, advancing the story by building on the previous paragraph, explaining a concept or thing, perhaps breaking the 4th wall, jumping places, or continuing the story guided by the provided outline.
+        Write a single paragraph, advancing the story by building on the previous paragraph.
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
