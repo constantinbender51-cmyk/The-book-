@@ -15,7 +15,7 @@ const CHAPTER_COUNT = parseInt(process.env.CHAPTER_COUNT, 10);
 function extractTextFromResponse(response) {
   try {
     // The text is nested within a specific path in the JSON response.
-    let text = JSON.stringify(response.response.candidates[0].content.parts[0].text, null, 2);
+    let text = response.response.candidates[0].content.parts[0].text;
     //console.log(` response .  \n${text}`);
     return text;
   } catch (error) {
@@ -41,8 +41,10 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
       //console.log("Full API response:", JSON.stringify(responseJson, null, 2));
       return response;
     } catch (error) {
-      if ((error.status === 429 || error.status === 503) && attempt < retries - 1) {
+      // The core change: Retry on ANY error.
+      if (attempt < retries - 1) {
         let delay = initialDelay * Math.pow(2, attempt);
+        
         // Check if the API response includes a specific retry delay
         const retryInfo = error.response?.data?.error?.details?.find(d => d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
         if (retryInfo && retryInfo.retryDelay) {
@@ -50,11 +52,11 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
           delay = Math.max(delay, apiDelaySeconds * 1000);
         }
         
-        console.warn(`API error ${error.status}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
+        console.warn(`An error occurred: ${error.message}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
         await sleep(delay);
         attempt++;
       } else {
-        throw error; // Re-throw the error if it's not a retriable status or we've run out of retries
+        throw error; // Re-throw the error if we've run out of retries
       }
     }
   }
