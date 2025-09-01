@@ -137,13 +137,12 @@ async function writeBookLogic(model) {
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
-        This is the previous paragraph of the chapter: "${previous_paragraph}"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         
-        Write a single paragraph, a single aspect, a fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} that one time will make up the whole chapter. Perhaps this is a single sentence from the outline guiding the whole paragraph, or a single word.
+        Write a single paragraph, an aspect, or a fragment advancing the current chapter ${currentChapter}
         Paragraphs written so far: ${paragraph_count}/max. 30 per chapter
         
         Important instructions:
@@ -182,7 +181,8 @@ async function writeBookLogic(model) {
       }
       
       // Update the summary for the next iteration
-      const summaryPrompt = `Based on the following content, write a summary of the book so far: "${bookContent}"`;
+      const summaryPrompt = `Based on the following content, write a summary of the book so far: "${bookContent}
+      End with a summary of the last few paragraphs."`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
 
