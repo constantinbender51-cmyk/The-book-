@@ -96,7 +96,7 @@ async function writeBookLogic(model) {
   try {
     // Stage 1: Create the world
     console.log("\n[1/5] Creating the world...");
-    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a world in which a story with ${CHAPTER_COUNT}. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
+    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a world in which a story with ${CHAPTER_COUNT} chapters. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
     const worldResponse = await callGenerativeAIWithRetry(worldPrompt, model);
     world = extractTextFromResponse(worldResponse);
     console.log("World created.");
