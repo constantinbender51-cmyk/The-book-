@@ -97,21 +97,21 @@ async function writeBookLogic(model) {
   try {
     // Stage 1: Create the world
     console.log("\n[1/5] Creating the world...");
-    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a detailed world for a book with ${CHAPTER_COUNT} chapters. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
+    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a world. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
     const worldResponse = await callGenerativeAIWithRetry(worldPrompt, model);
     world = extractTextFromResponse(worldResponse);
     console.log("World created.");
 
     // Stage 2: Create locations
     console.log("\n[2/5] Creating locations...");
-    const locationsPrompt = `Using this world description: "${world}", create locations for a book. Describe each location briefly in a single paragraph.`;
+    const locationsPrompt = `Using this world description: "${world}", create locations for a story. Describe each location briefly in a single paragraph.`;
     const locationsResponse = await callGenerativeAIWithRetry(locationsPrompt, model);
     locations = extractTextFromResponse(locationsResponse);
     console.log("Locations created.");
 
     // Stage 3: Create characters
     console.log("\n[3/5] Creating characters...");
-    const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create characters for the book. Briefly describe their personality, motivations, and role in the story.`;
+    const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create characters for a book. Briefly describe their personality, motivations, and role in the story.`;
     const charactersResponse = await callGenerativeAIWithRetry(charactersPrompt, model);
     characters = extractTextFromResponse(charactersResponse);
     console.log("Characters created.");
@@ -131,15 +131,16 @@ async function writeBookLogic(model) {
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
 
     let paragraph_count = 0;
-    let previous_paragraph = "Empty page";
+    let previousParagraphs = [];
     
     while (!bookComplete) {
       //console.log(`\n- Writing Chapter ${currentChapter}...`);
       
+      const previousParagraphsText = previousParagraphs.join(' ');
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write a few sentences as a continuation of the book, given the summary so far, world description, locations of the book, characters, and chapter outline.
+        You are an author writing a book. Your task is to write the next paragraph of the book, given the summary so far, world description, locations of the book, characters, and chapter outline.
         This is a summary of the book so far: "${summary}"
-        This is the previous paragraph: "${previous_paragraph}"
+        This is the previous 5 paragraphs: "${previousParagraphsText}"
         This is the paragraph count of this chapter: "${paragraph_count} (spread the developments and facets of the story out/pace the chapter such as to meet a total chapter count of no more than 5 paragraphs per chapter)"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
@@ -171,12 +172,16 @@ async function writeBookLogic(model) {
       }
 
       bookContent += `\n\n${newParagraph}`;
-      previous_paragraph = newParagraph;
+      
+      previousParagraphs.push(newParagraph);
+      if (previousParagraphs.length > 5) {
+        previousParagraphs = previousParagraphs.slice(-5);
+      }
 
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
         paragraph_count = 0;
-        previous_paragraph = "No previous paragraphs";
+        previousParagraphs = [];
         currentChapter++;
       }
 
