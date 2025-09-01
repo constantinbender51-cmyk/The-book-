@@ -88,6 +88,8 @@ async function writeBookLogic(model) {
   let summary = "Empty page, begin writing your book!";
   let currentChapter = 1;
   let bookComplete = false;
+  let previous_paragraph;
+  let paragraph_count = 0;
 
   console.log("--- Starting book writing process ---");
   console.log(`Keywords: ${KEYWORDS}`);
@@ -134,14 +136,17 @@ async function writeBookLogic(model) {
       console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write the next paragraph of the story.
+        You are an author writing a book. Your task is to write the next paragraph of the book. A chapter may have up to 30 paragrapghs. Take your time, set the scene, etc.
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
         Here are the main characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
         This is a summary of the book so far: "${summary}"
+        This is the previous paragraph: "${previous_paragraph}"
+        Number of paragraphs: "${paragraph_count}"
+        Chapter: 
         
-        Write a single, new paragraph that continues the story.
+        Write a single, new paragraph that begins or continues the books outline. 
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
@@ -163,10 +168,14 @@ async function writeBookLogic(model) {
         console.warn("Generated paragraph was empty. Skipping.");
       }
 
+      previous_paragraph = newParagraph;
       bookContent += `\n\n${newParagraph}`;
-
+      paragraph_count++;
+      
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
+        previous_paragraph = "New chapter";
+        paragraph_count = 0;
         currentChapter++;
       }
 
@@ -183,7 +192,7 @@ async function writeBookLogic(model) {
       // Add a 20-second pause between each AI call in the writing segment
       if (!bookComplete) {
         console.log("Pausing for 20 seconds before writing the next paragraph...");
-        await sleep(20000);
+        await sleep(5000);
       }
     }
     
