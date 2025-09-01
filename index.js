@@ -84,7 +84,7 @@ async function writeBookLogic(model) {
   let locations = "";
   let characters = "";
   let chapterOutline = "";
-  let summary = "Empty page";
+  let summary = "You have not written anything yet, begin by setting the scene.";
   let currentChapter = 1;
   let bookComplete = false;
 
@@ -96,7 +96,7 @@ async function writeBookLogic(model) {
   try {
     // Stage 1: Create the world
     console.log("\n[1/5] Creating the world...");
-    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a world. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
+    const worldPrompt = `Based on the keywords "${KEYWORDS}", create a world in which a story with ${CHAPTER}. Focus on the core concepts, history, and unique elements of the world. Provide a concise, single-paragraph description. Do not go beyond a general world description. Locations, characters, chapters will be conceptiualized by somebody else.`;
     const worldResponse = await callGenerativeAIWithRetry(worldPrompt, model);
     world = extractTextFromResponse(worldResponse);
     console.log("World created.");
@@ -144,7 +144,7 @@ async function writeBookLogic(model) {
         Here is the full chapter outline: "${chapterOutline}"
         This is a summary of the book so far: "${summary}"
         
-        Write a single paragraph, advancing the story by building on the previous paragraph.
+        Write a single paragraph, advancing the story by building on the summary.
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
