@@ -16,7 +16,7 @@ function extractTextFromResponse(response) {
   try {
     // The text is nested within a specific path in the JSON response.
     let text = JSON.stringify(response.response.candidates[0].content.parts[0].text, null, 2);
-    //console.log(` response .  \n${text}`);
+    //console.log(` response . \n${text}`);
     return text;
   } catch (error) {
     console.error("Failed to extract text from API response:", error);
@@ -41,8 +41,10 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
       //console.log("Full API response:", JSON.stringify(responseJson, null, 2));
       return response;
     } catch (error) {
-      if ((error.status === 429 || error.status === 503 || (error.message && error.message.includes('503'))) && attempt < retries - 1) {
+      // The core change: Retry on ANY error.
+      if (attempt < retries - 1) {
         let delay = initialDelay * Math.pow(2, attempt);
+        
         // Check if the API response includes a specific retry delay
         const retryInfo = error.response?.data?.error?.details?.find(d => d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
         if (retryInfo && retryInfo.retryDelay) {
@@ -50,11 +52,11 @@ async function callGenerativeAIWithRetry(prompt, model, retries = 10, initialDel
           delay = Math.max(delay, apiDelaySeconds * 1000);
         }
         
-        console.warn(`API error ${error.status}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
+        console.warn(`An error occurred: ${error.message}. Retrying in ${delay / 1000} seconds... (Attempt ${attempt + 1}/${retries})`);
         await sleep(delay);
         attempt++;
       } else {
-        throw error; // Re-throw the error if it's not a retriable status or we've run out of retries
+        throw error; // Re-throw the error if we've run out of retries
       }
     }
   }
@@ -68,7 +70,7 @@ async function writeBook() {
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
   
   try {
     await writeBookLogic(model);
@@ -132,7 +134,7 @@ async function writeBookLogic(model) {
     let previous_paragraph = "No previous paragraphs.";
     
     while (!bookComplete) {
-     // console.log(`\n- Writing Chapter ${currentChapter}...`);
+      // console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
         You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
