@@ -68,7 +68,7 @@ async function writeBook() {
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   try {
     await writeBookLogic(model);
@@ -102,14 +102,14 @@ async function writeBookLogic(model) {
 
     // Stage 2: Create locations
     console.log("\n[2/5] Creating locations...");
-    const locationsPrompt = `Using this world description: "${world}", create 3-5 key locations for a book. Describe each location briefly in a single paragraph.`;
+    const locationsPrompt = `Using this world description: "${world}", create locations for a book. Describe each location briefly in a single paragraph.`;
     const locationsResponse = await callGenerativeAIWithRetry(locationsPrompt, model);
     locations = extractTextFromResponse(locationsResponse);
     console.log("Locations created.");
 
     // Stage 3: Create characters
     console.log("\n[3/5] Creating characters...");
-    const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create 3-5 main characters for the book. Briefly describe their personality, motivations, and role in the story.`;
+    const charactersPrompt = `Using this world description: "${world}" and these locations: "${locations}", create characters for the book. Briefly describe their personality, motivations, and role in the story.`;
     const charactersResponse = await callGenerativeAIWithRetry(charactersPrompt, model);
     characters = extractTextFromResponse(charactersResponse);
     console.log("Characters created.");
@@ -128,18 +128,21 @@ async function writeBookLogic(model) {
     // Stage 5: Iteratively write the book, paragraph by paragraph
     console.log("\n[5/5] Writing the book, paragraph by paragraph...");
 
+    let paragraph_count = 0;
+    
     while (!bookComplete) {
       console.log(`\n- Writing Chapter ${currentChapter}...`);
       
       const paragraphPrompt = `
-        You are an author writing a book. Your task is to write the next paragraph of the story.
+        You are an author writing a book. Your task is to write a single paragraph of a book, given the summary so far, world description, locations of the book, characters, and chapter outline.
+        This is a summary of the book so far: "${summary}"
         Here is the world description: "${world}"
         Here are the key locations: "${locations}"
-        Here are the main characters: "${characters}"
+        Here are the characters: "${characters}"
         Here is the full chapter outline: "${chapterOutline}"
-        This is a summary of the book so far: "${summary}"
         
-        Write a single, new paragraph that continues the story.
+        Write a single paragraph, not a full logical conclusion, but a single aspect, fragment of the chapter ${currentChapter}/${CHAPTER_COUNT} of the book. 
+        Paragraphs written so far: ${paragraph_count}/max. 30 per chapter
         
         Important instructions:
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
@@ -165,6 +168,7 @@ async function writeBookLogic(model) {
 
       if (isChapterEnd) {
         console.log(`\n--- Chapter ${currentChapter} concluded. ---`);
+        paragraph_count = 0:
         currentChapter++;
       }
 
@@ -174,7 +178,7 @@ async function writeBookLogic(model) {
       }
       
       // Update the summary for the next iteration
-      const summaryPrompt = `Based on the following content, write a full summary of the book so far: "${bookContent}"`;
+      const summaryPrompt = `Based on the following content, write a summary of the book so far: "${bookContent}"`;
       const summaryResponse = await callGenerativeAIWithRetry(summaryPrompt, model);
       summary = extractTextFromResponse(summaryResponse).trim();
 
@@ -183,6 +187,7 @@ async function writeBookLogic(model) {
         console.log("Pausing for 20 seconds before writing the next paragraph...");
         await sleep(20000);
       }
+      paragraph_count++;
     }
     
     console.log("\n--- Book Writing Complete! ---");
