@@ -154,7 +154,7 @@ async function writeBookLogic(model) {
         - If this paragraph concludes a chapter, end your response with the exact phrase "END OF THE CHAPTER".
         - If this paragraph concludes the entire book, end your response with the exact phrase "END OF THE BOOK".`;
 
-      console.log(`\nPrompt:\n${paragraphPrompt}`);
+      //console.log(`\nPrompt:\n${paragraphPrompt}`);
 
       const paragraphResponse = await callGenerativeAIWithRetry(paragraphPrompt, model);
       let newParagraph = extractTextFromResponse(paragraphResponse).trim();
